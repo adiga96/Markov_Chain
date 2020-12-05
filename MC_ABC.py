@@ -35,40 +35,47 @@ def TMatrix_generator():
     return TP_Matrix
 
 # import pdb
-def MC_calculator(transition_matrix,present_state, days):
+def TMatrix_generator():    
 
-    # present_df = pd.DataFrame([present_state], columns=list('HCRD'))
-  
-    array = [[i] for i in present_state]
-    # print(transition_matrix)
+    matrix = np.random.uniform(low=0., high=0.99, size=(4, 4))
+    matrix = matrix / matrix.sum(axis=1, keepdims=1)
+    # matrix = np.random.normal(size=(4, 4))
+    # matrix = matrix / matrix.sum(axis=1, keepdims=1)
+    new_matrix = matrix[:-2]
+    abs_states = np.array([[0, 0, 1, 0], [0, 0, 0, 1]])
+    trans_matrix = np.concatenate((new_matrix,abs_states))
+    TP_Matrix = np.matrix(trans_matrix)
+    return TP_Matrix
     
-    for j in range(days):
-        new_state = present_state * transition_matrix
-        new_state = np.squeeze(np.asarray(new_state))
+def simulationABC(initial_values, days, no_of_simulations):
 
-        array[0].append(new_state[0])
-        array[1].append(new_state[1])
-        array[2].append(new_state[2])
-        array[3].append(new_state[3])
-        
-        present_state = new_state
-        
-    # for i in range(days):
-    #     new_state = present_state * transition_matrix
-    #     new_state_1 = np.squeeze(np.asarray(new_state))
-    #     for i in new_state_1:
-    #          somelist.append([i])
+    main_array = []
 
-    #     # new_df = pd.DataFrame([new_state_1], columns=list('HCRD'))
-    #     # tmatrix_df = pd.DataFrame([t_matrix], columns=list('T_Matrix'))
-    #     # tmatrix_df = pd.DataFrame(data=transition_matrix.flatten(), columns=["Transition Matrix"])
-    #     # present_df = present_df.append(new_df,ignore_index=True)
-    #     # present_df = present_df.append(tmatrix_df,ignore_index=True)
-    
-    transition_matrix = np.squeeze(np.asarray(transition_matrix))
-    array.append(transition_matrix)
+    for i in range(no_of_simulations):
 
-    return array
+        sub_array = [[i] for i in initial_values]
+
+        for j in range(days):
+            
+            current_state = initial_values
+            TP_Matrix = TMatrix_generator()
+            new_state = current_state * TP_Matrix
+            new_state = np.squeeze(np.asarray(new_state))
+
+            sub_array[0].append(new_state[0])
+            sub_array[1].append(new_state[1])
+            sub_array[2].append(new_state[2])
+            sub_array[3].append(new_state[3])
+
+            current_state = new_state       
+
+        TP_Matrix = np.squeeze(np.asarray(TP_Matrix))
+        sub_array.append(TP_Matrix)
+
+        main_array.append(sub_array)
+
+
+    return main_array
   
 import matplotlib.pyplot as plt
 plt.plot(sim_1['H'],color='red',label='Hospitalized')
