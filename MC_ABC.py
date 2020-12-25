@@ -23,16 +23,75 @@ f.fit()
 # but you call manually provide a smaller set of distributions
 f.summary()
 
-def TMatrix_generator():    
-    matrix = np.random.uniform(low=0., high=0.99, size=(4, 4))
-    matrix = matrix / matrix.sum(axis=1, keepdims=1)
-    # matrix = np.random.normal(size=(4, 4))
-    # matrix = matrix / matrix.sum(axis=1, keepdims=1)
-    new_matrix = matrix[:-2]
-    abs_states = np.array([[0, 0, 1, 0], [0, 0, 0, 1]])
-    trans_matrix = np.concatenate((new_matrix,abs_states))
-    TP_Matrix = np.matrix(trans_matrix)
-    return TP_Matrix
+# def TMatrix_generator():    
+#     matrix = np.random.uniform(low=0., high=0.99, size=(4, 4))
+#     matrix = matrix / matrix.sum(axis=1, keepdims=1)
+#     # matrix = np.random.normal(size=(4, 4))
+#     # matrix = matrix / matrix.sum(axis=1, keepdims=1)
+#     new_matrix = matrix[:-2]
+#     abs_states = np.array([[0, 0, 1, 0], [0, 0, 0, 1]])
+#     trans_matrix = np.concatenate((new_matrix,abs_states))
+#     TP_Matrix = np.matrix(trans_matrix)
+#     return TP_Matrix
+
+def TP_Matrix_generator(row_low, row_high):
+
+    HH = np.random.uniform(low = row_low , high = row_high)
+
+    CH_UL = 1 - HH
+    CH_LL = 0
+    CH = np.random.uniform(low = CH_LL , high = CH_UL)
+
+    RH_UL = 1 - (HH + CH)
+    RH_LL = 0
+    RH = np.random.uniform(low = RH_LL, high = RH_UL)
+
+    HCR_sum = HH + CH + RH
+    DH = 1 - HCR_sum
+
+    row = [HH, CH, RH, DH]
+    
+    return row
+
+# np.sum(row_1)
+row_1 = TP_Matrix_generator(0.7, 1)
+row_2 = TP_Matrix_generator(0.5,0.9)
+row_3 = np.array([0,0,1,0])
+row_4 = np.array([0,0,0,1])
+
+TP_Matrix = np.matrix([row_1,row_2,row_3,row_4])
+
+# TP_Matrix[3].sum()
+
+def TP_Matrix_generator(row_low, row_high):
+
+    HH = np.random.uniform(low = row_low , high = row_high)
+
+    CH_UL = 1 - HH
+    CH_LL = 0
+    CH = np.random.uniform(low = CH_LL , high = CH_UL)
+
+    RH_UL = 1 - (HH + CH)
+    RH_LL = 0
+    RH = np.random.uniform(low = RH_LL, high = RH_UL)
+
+    HCR_sum = HH + CH + RH
+    DH = 1 - HCR_sum
+
+    row = [HH, CH, RH, DH]
+    
+    return row
+
+# np.sum(row_1)
+row_1 = TP_Matrix_generator(0.7, 1)
+row_2 = TP_Matrix_generator(0.5,0.9)
+row_3 = np.array([0,0,1,0])
+row_4 = np.array([0,0,0,1])
+
+TP_Matrix = np.matrix([row_1,row_2,row_3,row_4])
+
+# TP_Matrix[3].sum()
+
 
 # import pdb
 def TMatrix_generator():    
