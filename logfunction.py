@@ -9,9 +9,7 @@ from scipy.stats import ks_2samp
 
 
 data = pd.read_csv('/Users/pritishsadiga/Desktop/test.csv')
-
 # 1. Logarthmic Function for Increasing and Decreasing Trends
-
 # Len(increasing_rate_list) = INC_Limit since we have deleted non-positive numbers and infinity from the list, total value will be equal to the increasing limit.
 
 data_copy = data # create a copy of the data
@@ -97,20 +95,18 @@ def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_val
 
 # LikeLihood Ratio Test
 
-'''
 from scipy.stats.distributions import chi2
 def likelihood_ratio(llmin, llmax):
     return(2*(llmax-llmin))
 
 LR = likelihood_ratio(L1,L2)
 p = chi2.sf(LR, 1) # L2 has 1 DoF more than L1
-'''
+
 
 
 # Calculating Likelihood of Curve Fitting using Scipy
 # https://stackoverflow.com/questions/23004374/how-to-calculate-the-likelihood-of-curve-fitting-in-scipy
 
-'''
 import scipy.optimize as so
 import scipy.stats as ss
 # xdata = np.array([-2,-1.64,-1.33,-0.7,0,0.45,1.2,1.64,2.32,2.9])
@@ -138,102 +134,3 @@ df = len(xdata) - 3
 
 f_ratio = (ssq0 - ssq1) / (ssq1 / df)
 p = 1 - ss.f.cdf(f_ratio, 1, df)
-'''
-
-#--------------------------------------------------------------------------------------------------------------
-# 2. Transition Probability Matrix Generator (A)
-
-def TMatrix_generator(x,y):    
-
-    # matrix = np.random.uniform(low=0., high=0.99, size=(4, 4))
-    matrix = np.random.uniform(low = x , high = y, size=(4,4))   
-    matrix = matrix / matrix.sum(axis=1, keepdims=1)
-    # matrix = np.random.normal(size=(4, 4))
-    # matrix = matrix / matrix.sum(axis=1, keepdims=1)
-    new_matrix = matrix[:-2]
-    abs_states = np.array([[0, 0, 1, 0], [0, 0, 0, 1]])
-    trans_matrix = np.concatenate((new_matrix,abs_states))
-    TP_Matrix = np.matrix(trans_matrix)
-    return TP_Matrix
-
-# 2. Transition Probability Matrix Generator (B)
-'''
-def TP(average_value):
-    x = average_value + factor * average_value 
-    y = average_value - factor * average_value
-    gen = np.random.uniform(low = x, high = y)
-    return gen
-    '''
-#--------------------------------------------------------------------------------------------------------------
-
-def Trans_Matrix(x,y):
-    A = np.random.uniform(low = x, high = y)
-    B_UL = 1 - A
-    B_LL = 0
-    B = np.random.uniform(low = B_LL , high = B_UL)
-    C_UL = 1 - B
-    C_LL = 0
-    C = np.random.uniform(low = C_LL, high = C_UL)
-    total_sum = A + B + C
-    D = 1- total_sum
-
-    row_values = [A, B, C, D]
-
-    return row_values
-
-#--------------------------------------------------------------------------------------------------------------
-def simulationABC(initial_values, days, no_of_simulations, TP_mat):
-    '''
-    args:
-        initial_values- The current state of hospitalized, critical care, recovered and death
-        days = No. of days for which the simulation has to be run
-        no_of_simulations - No of total times the the Transition Matrix has to be simulated    
-    '''
-    main_array = []
-    
-
-    for i in range(no_of_simulations):
-
-        current_state = initial_values
-        sub_array = [[i] for i in initial_values]
-        TP_Matrix = TP_mat
-        
-        for j in range(days):
-              
-            new_state = current_state * TP_Matrix
-            new_state = np.squeeze(np.asarray(new_state))
-            
-            sub_array[0].append(new_state[0])
-            sub_array[1].append(new_state[1])
-            sub_array[2].append(new_state[2])
-            sub_array[3].append(new_state[3])
-
-            current_state = new_state       
-
-        TP_Matrix = np.squeeze(np.asarray(TP_Matrix))
-        sub_array.append(TP_Matrix)
-
-        main_array.append(sub_array)
-        
-    return main_array
-
-#--------------------------------------------------------------------------------------------------------------
-def posterior(obs_data,sim_data):
-  
-    
-    accept = []
-    for i in range(len(sim_data)):
-        
-        x = obs_data
-
-        y = sim_data[i][0]
-        y = obs_data
-        K_S_Test = ks_2samp(x,y)
-        p_value = K_S_Test.pvalue
-
-        if(p_value >= 0.10):
-            
-            accept.append(sim_data[i])
-    
-
-    return accept
