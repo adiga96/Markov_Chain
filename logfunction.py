@@ -10,6 +10,7 @@ from scipy.stats import ks_2samp
 
 data = pd.read_csv('/Users/pritishsadiga/Desktop/test.csv')
 # 1. Logarthmic Function for Increasing and Decreasing Trends
+
 # Len(increasing_rate_list) = INC_Limit since we have deleted non-positive numbers and infinity from the list, total value will be equal to the increasing limit.
 
 data_copy = data # create a copy of the data
@@ -42,7 +43,7 @@ min_rate = min(increasing_rate_list)
 max_rate = max(increasing_rate_list)
 
 # Fucntion to get the NHC change rate using simulation
-def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_values, observed_values):
+def exp_simulation(max_rate, min_rate, total_simulations, init_value, total_values):
     '''
     args:
         #  For simulation = max_rate, min_rate
@@ -51,6 +52,10 @@ def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_val
         3. init_value (integer) = Initial Value for the LOG Function
         4. total_values (integer) = Total Values to be calculated using the LOG Function
         5. observed_values (List) = Hospitalizations Cases from OBSERVED DATA
+    
+    returns:
+        array[[array][array]] with all values simulated from the NHC_rate generated 
+
     '''
     # NHC = New Hospitalization Cases
 
@@ -58,7 +63,7 @@ def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_val
 
     for i in range(total_simulations):
 
-        rate = np.random.uniform(low = increasing_exp_rate - 0.01 , high = increasing_exp_rate + 0.01) # For simulation
+        rate = np.random.uniform(low = min_rate, high = max_rate) # For simulation
         #rate = 0.1015 # Average Rate from Empirical Data
         limit = total_values # Total values to predicted using LOG Function
         present_state = init_value # Initial Value to start the prediction with
@@ -69,15 +74,28 @@ def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_val
         
         for j in range(limit):
 
-            next_state = present_state * math.exp(rate). # NHC(n+1) = NHC(n) x e ^ (NHC_rate)
+            next_state = present_state * math.exp(rate) # NHC(n+1) = NHC(n) x e ^ (NHC_rate)
             NHC_sub_list[0].append(next_state)
             present_state = next_state
 
         NHC_sub_list[1].append(rate)
         NHC_list.append(NHC_sub_list) #appending the values of each simulation to main list
     
-    # Kolmogorov Smirnov Test
-    
+
+    return NHC_list
+
+
+# Kolmogorov Smirnov Test
+def KS_TEST(NHC_list, observed_values):
+
+    '''
+    args:
+        NHC_list (List[a][b]) = Output of exp_simulation Function
+        observed_values = OBSERVED increasing trend data
+
+    returns: 
+        All the accepted values by checking p value and matching significance 
+    '''
     accepted_values = []
 
     for i in range(len(NHC_list)):
@@ -85,7 +103,7 @@ def exp_simulation(increasing_exp_rate, total_simulations, init_value, total_val
         K_S_Test = ks_2samp(NHC_list[i][0],observed_values)
         p_value = K_S_Test.pvalue
 
-        if p_value >= 0.05: 
+        if p_value >= 0.10: 
             accepted_values.append(NHC_list[i])
             # print('Values accepted')
         # else:
