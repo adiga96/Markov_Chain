@@ -171,3 +171,24 @@ for i in range(DEC_limit - 1):
 
 dec_rate_list = [round(num,5) for num in range_rate_list_1] 
 decreasing_exp_rate = round(sum(dec_rate_list) / DEC_limit,5)
+
+# To identify the value at which the rate data starts increasing 
+
+def groupSequence(l): 
+    start_bound = [i for i in range(len(l)-1) 
+        if (l == 0 or l[i] != l[i-1]+1) 
+        and l[i + 1] == l[i]+1] 
+  
+    end_bound = [i for i in range(1, len(l)) 
+        if l[i] == l[i-1]+1 and
+        (i == len(l)-1 or l[i + 1] != l[i]+1)] 
+  
+    return [l[start_bound[i]:end_bound[i]+1] 
+    for i in range(len(start_bound))] 
+    
+    end_point_dec_trend = groupSequence(hospital_list)
+
+# To find the index of the value at which the rate data starts increasing
+
+index_end_point_dec_trend = hospital_list.index(end_point_dec_trend[0][0])
+Dec_list = data_copy_2[['hospitalized']][INC_limit : 40 + index_end_point_dec_trend + 1]
