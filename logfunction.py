@@ -152,3 +152,22 @@ df = len(xdata) - 3
 
 f_ratio = (ssq0 - ssq1) / (ssq1 / df)
 p = 1 - ss.f.cdf(f_ratio, 1, df)
+
+# Decreasing Function
+
+data_copy_2 = data
+
+dec = data_copy_2[['hospitalized']][INC_limit : INC_limit + index_end_point_dec_trend + 1 ]
+Dec_list = dec.reset_index(drop=True)
+
+range_rate_list_1 = []
+
+DEC_limit = len(data_copy_2['hospitalized'][INC_limit: INC_limit + index_end_point_dec_trend + 1])
+
+i = 0
+for i in range(DEC_limit - 1):
+    range_Rate_1 = math.log( (Dec_list['hospitalized'][i+1]) / (Dec_list['hospitalized'][i]))
+    range_rate_list_1.append(range_Rate_1)
+
+dec_rate_list = [round(num,5) for num in range_rate_list_1] 
+decreasing_exp_rate = round(sum(dec_rate_list) / DEC_limit,5)
