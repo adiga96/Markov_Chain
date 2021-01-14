@@ -12,7 +12,6 @@ data = pd.read_csv('/Users/pritishsadiga/Desktop/test.csv')
 # 1. Logarthmic Function for Increasing and Decreasing Trends
 
 # Len(increasing_rate_list) = INC_Limit since we have deleted non-positive numbers and infinity from the list, total value will be equal to the increasing limit.
-
 data_copy = data # create a copy of the data
 
 # Find the Peak value of the distribution (MAX() or MIN())
@@ -85,73 +84,6 @@ def exp_simulation(max_rate, min_rate, total_simulations, init_value, total_valu
     return NHC_list
 
 
-# Kolmogorov Smirnov Test
-def KS_TEST(NHC_list, observed_values):
-
-    '''
-    args:
-        NHC_list (List[a][b]) = Output of exp_simulation Function
-        observed_values = OBSERVED increasing trend data
-
-    returns: 
-        All the accepted values by checking p value and matching significance 
-    '''
-    accepted_values = []
-
-    for i in range(len(NHC_list)):
-
-        K_S_Test = ks_2samp(NHC_list[i][0],observed_values)
-        p_value = K_S_Test.pvalue
-
-        if p_value >= 0.10: 
-            accepted_values.append(NHC_list[i])
-            # print('Values accepted')
-        # else:
-            # print('Values rejected')
-                
-    return accepted_values
-
-# LikeLihood Ratio Test
-
-from scipy.stats.distributions import chi2
-def likelihood_ratio(llmin, llmax):
-    return(2*(llmax-llmin))
-
-LR = likelihood_ratio(L1,L2)
-p = chi2.sf(LR, 1) # L2 has 1 DoF more than L1
-
-
-
-# Calculating Likelihood of Curve Fitting using Scipy
-# https://stackoverflow.com/questions/23004374/how-to-calculate-the-likelihood-of-curve-fitting-in-scipy
-
-import scipy.optimize as so
-import scipy.stats as ss
-# xdata = np.array([-2,-1.64,-1.33,-0.7,0,0.45,1.2,1.64,2.32,2.9])
-# ydata = np.array([0.699369,0.700462,0.695354,1.03905,1.97389,2.41143,1.91091,0.919576,-0.730975,-1.42001])
-
-xdata = np.array(q2)
-ydata = np.array(q1)
-
-def model0(x, p1, p2):
-    return p1 * np.cos(p2 * x) + p2 * np.sin(p1 * x)
-def model1(x, p1, p2, p3):
-    return p1 * np.cos(p2 * x) + p2 * np.sin(p1 * x) + p3 * x
-
-p1, p2, p3 = 1, 0.2, 0.01
-
-fit0 = so.curve_fit(model0, xdata, ydata, p0=(p1, p2))[0]
-fit1 = so.curve_fit(model1, xdata, ydata, p0=(p1, p2, p3))[0]
-yfit0 = model0(xdata, fit0[0], fit0[1])
-yfit1 = model1(xdata, fit1[0], fit1[1], fit1[2])
-
-ssq0 = ((yfit0-ydata)* 2).sum()
-ssq1 = ((yfit1 - ydata)* 2).sum()
-
-df = len(xdata) - 3
-
-f_ratio = (ssq0 - ssq1) / (ssq1 / df)
-p = 1 - ss.f.cdf(f_ratio, 1, df)
 
 # Decreasing Function
 
