@@ -5,12 +5,10 @@ from scipy import random
 from scipy import stats
 import statistics
 import matplotlib.pyplot as plt
-from scipy.stats import ks_2samp  
 
 
 data = pd.read_csv('/Users/pritishsadiga/Desktop/test.csv')
 # 1. Logarthmic Function for Increasing and Decreasing Trends
-
 # Len(increasing_rate_list) = INC_Limit since we have deleted non-positive numbers and infinity from the list, total value will be equal to the increasing limit.
 data_copy = data # create a copy of the data
 
