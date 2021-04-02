@@ -9,60 +9,42 @@ data_copy = data # create a copy of the data
 hospitalized = data_copy['hospitalized'].tolist()
 
 
-# To calculate the 7 days, 1 week rate of addition of NHC (New Hopsitalization Cases)
-rate = 0
-rate_count = 0
-NHC_avg_rate = [] 
+def NHC_calculator(Missing_Hospitalization_Cases):    
+    
+    rate = 0
+    rate_count = 0
+    NHC_avg_rate = [] 
 
-for i in range(0, len(hospitalized) - 1):
+    for i in range(0, len(Missing_Hospitalization_Cases) - 1):
 
-    rate += math.log(hospitalized[i + 1] / hospitalized[i])
-    rate_count += 1        #count every iteration
+        rate += math.log(Missing_Hospitalization_Cases[i + 1] / Missing_Hospitalization_Cases[i])
+        rate_count += 1        
 
-    if rate_count == 7:     #once count is equal to a week, caluclate average rate
-        NHC_avg_rate.append(rate / 7)
-        rate = 0
-        rate_count = 0
-        
-NHC_avg_rate = [round(num) for num in NHC_avg_rate]
-# NHC_avg_rate
+        if rate_count == 7:     #once count is equal to a week, caluclate average rate
+            NHC_avg_rate.append(rate / 7)
+            rate = 0
+            rate_count = 0
+    # print(NHC_avg_rate)
 
+    # To generate NHC based on 1-week rate change
+    day = 0
+    NHC_cases = []
+    previous_day = 1
 
-# To calculate the rate of increase of cases from March 1 to March 17
-days = 17
-NHC_cases = []
-rate = 0.3405 # first 17 days no data give, so assume a rate 34.05%
-current_value = 1 # assume on March 1, hospitalization cases = 1
-for i in range(sums):
-    next_value = current_value * math.exp(rate)
-    NHC_cases.append(next_value)
-    current_value = next_value
+    for i in range(0, len(Missing_Hospitalization_Cases) - 1):
+  
+        avg_rate = NHC_avg_rate[day // 7]
+        new_day = previous_day * math.exp(avg_rate)
+        NHC_cases.append(new_day)
+        previous_day = new_day
 
-NHC_cases = [round(num) for num in NHC_cases]
-# NHC_cases
+        day += 1
+        if day // 7 >= len(NHC_avg_rate):
+            break
 
+    NHC_Cases = [round(num) for num in NHC_cases]
 
-# To generate NHC based on 1-week rate change
-count = 0
-NHC_cases_1 = []
-pp = NHC_cases[16]
-# pp
-
-for i in range(0,len(hospitalized)-1):
-    # print(i)
-    rate = NHC_avg_rate[count // 7]
-    # print(rate)
-    nn = pp * math.exp(rate)
-    NHC_cases_1.append(nn)
-    pp = nn
-
-    count+=1
-    if count // 7 >= len(NHC_avg_rate):
-        break
-
-NHC_total_cases = NHC_cases + NHC_cases_1
-NHC_total_cases = [round(num) for num in NHC_total_cases]
-# NHC_total_cases
+    return NHC_Cases
 
 # To plot
 
