@@ -1,4 +1,5 @@
-# Markov Chain and Approximate Bayesian Computation (MC-ABC rejection)
+# Predicting increasing PPE demand in hospitals due to COVID 19: A stochastic approach using discrete-time Markov Chain
+
 
 M.S Thesis
 
