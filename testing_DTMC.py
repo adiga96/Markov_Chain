@@ -18,6 +18,11 @@ Observed_values_1 = [data_1['hospitalizedCurrently'].tolist(),
                     data_1['RecoveredCurrently'].tolist(),
                     data_1['DeathCurrently'].tolist()]
 
+Observed_values_1 = [data_1['hospitalizedCurrently'].tolist(),
+                    data_1['CriticalCurrently'].tolist(),
+                    data_1['RecoveredCurrently'].tolist(),
+                    data_1['DeathCurrently'].tolist()]
+
 # ---------------------------------------------------------------To Fill the first N - Zero Elements with values from a an Exponential function ---------------------------------------------------------------
 
 def fill_missing_values(list_values, rate):
@@ -462,6 +467,239 @@ def least_MAE_calc(MAE_value_list,index_number,threshold):
     return final_list
 
 
+from sklearn.metrics import mean_absolute_percentage_error
+def Mean_Absolute_Percentage_Error(y_observed, y_predicted):
+
+    y_observed_H = y_observed[0][4:]
+    y_observed_C = y_observed[1][4:] 
+    y_observed_R = y_observed[2][4:] 
+    y_observed_D = y_observed[3][4:]
+
+    MAPE_H, MAPE_C, MAPE_R, MAPE_D = [],[],[],[]
+
+    for i in range(len(y_predicted)):
+        y_predicted_H = y_predicted[i][0][0][0]
+        y_predicted_C = y_predicted[i][0][0][1]
+        y_predicted_R = y_predicted[i][0][0][2]
+        y_predicted_D = y_predicted[i][0][0][3]
+
+        MAPE_H.append(mean_absolute_percentage_error(y_observed_H, y_predicted_H))
+        MAPE_C.append(mean_absolute_percentage_error(y_observed_C, y_predicted_C))
+        MAPE_R.append(mean_absolute_percentage_error(y_observed_R, y_predicted_R))
+        MAPE_D.append(mean_absolute_percentage_error(y_observed_D, y_predicted_D))
+
+    return [[MAPE_H, MAPE_C, MAPE_R, MAPE_D]]
+
+from sklearn.metrics import mean_squared_error
+import math
+def Root_Mean_Squared_Error(y_observed, y_predicted):
+
+    y_observed_H = y_observed[0][4:]
+    y_observed_C = y_observed[1][4:] 
+    y_observed_R = y_observed[2][4:] 
+    y_observed_D = y_observed[3][4:]
+
+    RMSE_H, RMSE_C, RMSE_R, RMSE_D = [],[],[],[]
+
+    for i in range(len(y_predicted)):
+        y_predicted_H = y_predicted[i][0][0][0]
+        y_predicted_C = y_predicted[i][0][0][1]
+        y_predicted_R = y_predicted[i][0][0][2]
+        y_predicted_D = y_predicted[i][0][0][3]
+
+        MSE_H = mean_absolute_error(y_observed_H, y_predicted_H)
+        RMSE_0 = math.sqrt(MSE_H)
+        RMSE_H.append(RMSE_0)
+
+        MSE_C = mean_absolute_error(y_observed_C, y_predicted_C)
+        RMSE_1 = math.sqrt(MSE_C)
+        RMSE_C.append(RMSE_1)
+
+        MSE_R = mean_absolute_error(y_observed_R, y_predicted_R)
+        RMSE_2 = math.sqrt(MSE_R)
+        RMSE_R.append(RMSE_2)
+
+        MSE_D = mean_absolute_error(y_observed_D, y_predicted_D)
+        RMSE_3 = math.sqrt(MSE_D)
+        RMSE_D.append(RMSE_3)
+
+        
+        
+    return [RMSE_H, RMSE_C, RMSE_R, RMSE_D]
+
+# Fucntion to choose the  best MAE values
+def lowest_error_values(state_values, limit1, limit2, limit3):
+
+    '''
+    args: 
+        state_values: A list containing the posterior values of different states
+
+    returns:
+        accepted_MAE / MAPE = Best accepted values
+    '''
+    
+    H, C, R, D = [[],[]], [[],[]], [[],[]], [[],[]]
+    for i in range(0, len(state_values[0])):
+        
+        # print(state_values[2]) 
+        if state_values[0][i] <= 0.2:
+            H[0].append(state_values[0][i])
+            H[1].append((state_values[0]).index(state_values[0][i]))
+            
+        if state_values[1][i] <= limit1:
+            C[0].append(state_values[1][i])
+            C[1].append((state_values[1]).index(state_values[1][i]))
+
+        if state_values[2][i] <= limit2:
+            R[0].append(state_values[2][i])
+            R[1].append((state_values[2]).index(state_values[2][i]))
+
+        if state_values[3][i] <= limit3:
+            D[0].append(state_values[3][i])
+            D[1].append((state_values[3]).index(state_values[3][i]))
+        
+    lowest_error_values = [H, C, R, D]
+
+    return lowest_error_values
+
+# Filtering best MAE/Mean (below 0.1 - 0.2) and MAPE values (below 0.20 = Good, below 0.10 = Excellent )
+def Filtered_errors(MAE, MAPE, RMSE):
+    '''
+    args: 
+        MAE, MAPE, RMSE : List of all the Errors from 1K, 10K and 100K simulations
+    returns:
+        List: A list containing all filtered error values for the 1K, 10K and 100K simulations
+        List[0][0] = MAE
+        List[0][1][0] = MAE / Mean
+        List[0][1][1] = Indices
+        List[1] = MAPE
+        List[2] = RMSE
+    '''
+    Filtered_MAE = lowest_error_values(MAE,0.25,0.25,0.25)
+    Filtered_MAPE = lowest_error_values(MAPE,0.25,0.25,0.25)
+    Filtered_RMSE = lowest_error_values(RMSE,100,100,100)
+
+    return [Filtered_MAE, Filtered_MAPE, Filtered_RMSE]
+    
+# ----------------- 12.6 Finding the Index of best RMSE, MAE, MAE/Mean and MAPE values and creating an Interesection (A n B n C) List  ----------------------------
+
+# Matching the indexes of the values of best MAE / Mean and MAPE values
+def error_mapping_intersection(MAE, MAPE, RMSE, Filtered_Error_MAE, Filtered_Error_MAPE, Filtered_Error_RMSE, Posterior_predicted):
+    '''
+    args:
+        MAE, MAPE, RMSE : Error Values List
+        Filtered_Error_MAE, MAPE, RMSE : Filterest List obtained from 'FUNCTION - Filtered_errors'
+        Posterior_predicted: Predicted Values o
+    return:
+        List [0] : Predicted Values (with Filtered Errors) for Graphs
+            List[0][0] : Predicted Values (based on Errors over Critical Care)
+            List[0][1] : Predicted Values (based on Errors over Recovered Cases)
+            List[0][2] : Predicted Values (based on Errors over Death Cases)
+
+        List [1] : Indicies
+            List [1][0] : Common Indicies of Values of Posterior Prediction with least errors
+            List [1][1] : Unique Indices of Values of Posterior Prediction with least errors
+
+        List [2] : Results
+            List [2][0] : Transiton Probabilitiy Matrix
+            List [2][1] : MAE Values
+            List [2][2] : Scaled MAE Values
+            List [2][3] : RMSE Values
+            List [2][4] : MAPE % Values
+    '''
+
+    Common_indices_C = list(set(Filtered_Error_MAE[0][1][1]) & set(Filtered_Error_MAPE[1][1][1]) & set(Filtered_Error_RMSE[2][1][1]))
+    Common_indices_R = list(set(Filtered_Error_MAE[0][2][1]) & set(Filtered_Error_MAPE[1][2][1]) & set(Filtered_Error_RMSE[2][2][1]))
+    Common_indices_D = list(set(Filtered_Error_MAE[0][3][1]) & set(Filtered_Error_MAPE[1][3][1]) & set(Filtered_Error_RMSE[2][3][1]))
+
+    All_Common_indices = Common_indices_C + Common_indices_R + Common_indices_D
+    All_Common_indices_set = list(set(All_Common_indices))
+
+
+    # Mapping the index values towards the Predicted Values of Posterior Distribution to identify the acceptable Transition Matrix of the Model
+    Predicted_C,Predicted_R,Predicted_D = [],[],[]
+
+    for i in range(len(Common_indices_C)):
+        Predicted_C.append(Posterior_predicted_100K[Common_indices_C[i]])
+
+    for i in range(len(Common_indices_R)):
+        Predicted_R.append(Posterior_predicted_100K[Common_indices_R[i]])
+
+    for i in range(len(Common_indices_D)):
+        Predicted_D.append(Posterior_predicted_100K[Common_indices_D[i]])
+
+    
+    # Extracting the Transition Probabiltiies from the common indices from the 
+    TMatrix_common = []
+    TMI = All_Common_indices
+    for i in range(0, len(TMI)):
+        TMatrix_common.append(np.matrix(Posterior_predicted[TMI[i]][0][0][4]).round(4))
+
+
+    MAE_final_list_from_C, MAE_final_list_from_R, MAE_final_list_from_D = [],[],[] # MAE
+    Scaled_MAE_final_list_from_C, Scaled_MAE_final_list_from_R, Scaled_MAE_final_list_from_D = [],[],[] # MAE/Meam
+    MAPE_final_list_from_C, MAPE_final_list_from_R, MAPE_final_list_from_D = [],[],[] # MAPE
+    RMSE_final_list_from_C, RMSE_final_list_from_R, RMSE_final_list_from_D = [],[],[] # RMSE
+
+    for i in range(len(Common_indices_C)):
+        MAE_final_list_from_C.append(MAE[0][1][Common_indices_C[i]])
+        Scaled_MAE_final_list_from_C.append(MAE[1][1][Common_indices_C[i]])
+        MAPE_final_list_from_C.append(MAPE[0][1][Common_indices_C[i]])
+        RMSE_final_list_from_C.append(RMSE[1][Common_indices_C[i]])
+       
+
+    for i in range(len(Common_indices_R)):
+        MAE_final_list_from_R.append(MAE[0][2][Common_indices_R[i]])
+        Scaled_MAE_final_list_from_R.append(MAE[1][2][Common_indices_R[i]])
+        MAPE_final_list_from_R.append(MAPE[0][2][Common_indices_R[i]])
+        RMSE_final_list_from_R.append(RMSE_100K[2][Common_indices_R[i]])
+
+    for i in range(len(Common_indices_D)):
+        MAE_final_list_from_D.append(MAE[0][3][Common_indices_D[i]])
+        Scaled_MAE_final_list_from_D.append(MAE[1][3][Common_indices_D[i]])
+        MAPE_final_list_from_D.append(MAPE[0][3][Common_indices_D[i]])
+        RMSE_final_list_from_D.append(RMSE_100K[3][Common_indices_D[i]])
+
+
+    # Sum of all Mapped Values for each state
+
+    MAE_all_mapped_mae_mape_values = MAE_final_list_from_C + MAE_final_list_from_R + MAE_final_list_from_D
+    Scaled_MAE_all_mapped_mae_mape_values = Scaled_MAE_final_list_from_C + Scaled_MAE_final_list_from_R + Scaled_MAE_final_list_from_D
+    RMSE_all_mapped_mae_mape_values = RMSE_final_list_from_C + RMSE_final_list_from_R + RMSE_final_list_from_D
+
+    MAPE_all_mapped_mae_mape_values = MAPE_final_list_from_C + MAPE_final_list_from_R + MAPE_final_list_from_D
+    MAPE_all_mapped_mae_mape_values_100 = []
+    for i in range(len(MAPE_all_mapped_mae_mape_values)):
+        MAPE_all_mapped_mae_mape_values_100.append(MAPE_all_mapped_mae_mape_values[i] * 100)
+
+    
+    return [[Predicted_C, Predicted_R, Predicted_D], 
+            [All_Common_indices, All_Common_indices_set], 
+            [TMatrix_common, RMSE_all_mapped_mae_mape_values, MAE_all_mapped_mae_mape_values, Scaled_MAE_all_mapped_mae_mape_values, MAPE_all_mapped_mae_mape_values_100]]
+
+# ---------------------------To Save the Results in CSV -----------------------------------------------
+
+def Results_DF(results, FileName, condition):
+
+    value_df = pd.DataFrame({'Transition Probability Matrix':  results[2][0] ,
+                                'RMSE': results[2][1], 
+                                'MAE': results[2][2], 
+                                'MAE/Mean':results[2][3] , 
+                                'MAPE %':results[2][4]})
+
+    # condition = input("Enter your value (Save File / View DataFrame): ")
+        
+    if condition == 'Save File':
+        value_df.to_csv('/Users/pritishsadiga/Desktop/MS_Thesis/' + f'{FileName}' + '.csv')
+        return print('Your Results have been saved in a CSV')
+
+    elif condition == 'View DataFrame':
+            return value_df
+    else:
+        return print('Enter the correct value')
+
+
+
 # -------------------------------------------------------------- To calculate the rate of increase of cases from March 1 to March 17--------------------------------------------------------------
 
 # To plot the Posterior Distribution
@@ -527,8 +765,39 @@ def PlOT_POSTERIOR_SIM(posterior):
     DC_post = plot_posterior(posterior[7],'Posterior: P(D|C)')
 
     return HH_post, CH_post, RH_post, DH_post, HC_post, CC_post, RC_post, DC_post
-   
-   
+
+def plot_graph(col1, col2, col3, col4,col11, col12, col13, col14, title1, title2):
+
+    
+        plt.plot(col1,color='green',ls = '--',label= 'Predicted H')
+        plt.plot(col2,color='red',ls = '--',label='Predicted C')
+        plt.plot(col3,color='blue',ls = '--',label= 'Predicted R')
+        plt.plot(col4,color='black',ls = '--',label= 'Predicted D')
+
+        plt.plot(col11,color='green', label= 'Observed H')
+        plt.plot(col12,color='red',label='Observed C')
+        plt.plot(col13,color='blue',label= 'Observed R')
+        plt.plot(col14,color='black',label= 'Observed D')
+
+        plt.xlabel('Days')
+        plt.ylabel('Cases')
+        plt.legend()
+        
+        
+        # tpmatrix = iteration value for graph number
+        plt.title(f'{title1}' + ' ' + f'Graph' + ' ' + f'{tpmatrix}' + ':' + f'{title2}')
+        
+        plt.rcParams['figure.figsize']= [20,6]
+
+        return plt.show()
+
+def plot_hist(data_column, hist_title):
+    x = data_column
+    plt.title(hist_title)
+
+    plt.hist(x, bins = 250)
+    return plt.show()
+# -----------------------------------------------------------------------------------------------------------------
    
 ### 1. To Fill All Missing data points in the Data Set 
    
